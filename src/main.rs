@@ -1,6 +1,6 @@
 use dashu::float::DBig;
 use std::io;
-
+use std::time::Instant;
 fn main() {
     let mut buffer = String::new();
     println!(
@@ -64,6 +64,7 @@ fn main() {
             }
         };
     };
+    let start = Instant::now();
     if choice == 1 {
         let c = 4.0;
         let mut pi = 0.0;
@@ -156,4 +157,6 @@ fn main() {
         let phi = (&one + &x) / &two;
         println!("Golden ratio: {}", phi);
     }
+    let duration = start.elapsed();
+    println!("Время: {:?}", duration);
 }
