@@ -3,12 +3,14 @@ use std::io;
 
 fn main() {
     let mut buffer = String::new();
-    println!("Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big");
+    println!(
+        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)"
+    );
     let choice = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Ошибка");
         if let Ok(num) = buffer.trim().parse::<u8>() {
-            if num > 0 && num <= 4 {
+            if num > 0 && num <= 5 {
                 break num;
             } else {
                 println!("Wrong number");
@@ -45,8 +47,8 @@ fn main() {
             println!("Not number");
         }
     };
-    let mut precision = 0;
-    if choice == 3 || choice == 4 {
+    let mut precision = 1;
+    if choice == 3 || choice == 4 || choice == 5 {
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
             buffer.clear();
@@ -140,5 +142,18 @@ fn main() {
                 println!("Число e {}", e);
             }
         }
+    } else if choice == 5 {
+        let s = DBig::from(5u32).with_precision(precision).value();
+        let one = DBig::from(1u32).with_precision(precision).value();
+        let two = DBig::from(2u32).with_precision(precision).value();
+        let mut x = &s / &two;
+        for i in 0..=itter {
+            x = (&x + (&s / &x)) / &two;
+            if i % info == 0 {
+                println!("Корень из 5 равняеться: {}", x);
+            }
+        }
+        let phi = (&one + &x) / &two;
+        println!("Golden ratio: {}", phi);
     }
 }
