@@ -73,6 +73,19 @@ fn main() {
             }
         };
     };
+    let mut x = DBig::from(1u32).with_precision(precision).value();
+    if choice == 6 {
+        println!("Enter x: ");
+        x = loop {
+            buffer.clear();
+            io::stdin().read_line(&mut buffer).expect("Error");
+            if let Ok(num) = buffer.trim().parse::<DBig>() {
+                break num.with_precision(precision).value();
+            } else {
+                println!("Это не число! Давай еще раз:");
+            }
+        };
+    }
     let start = Instant::now();
     if choice == 1 {
         let c = 4.0;
@@ -166,16 +179,6 @@ fn main() {
         let phi = (&one + &x) / &two;
         println!("Golden ratio: {}", phi);
     } else if choice == 6 {
-        println!("Enter x: ");
-        let x = loop {
-            buffer.clear();
-            io::stdin().read_line(&mut buffer).expect("Error");
-            if let Ok(num) = buffer.trim().parse::<DBig>() {
-                break num.with_precision(precision).value();
-            } else {
-                println!("Это не число! Давай еще раз:");
-            }
-        };
         let mut fac = DBig::from(6u32).with_precision(precision).value();
         let mut plus = false;
         let mut sinx = x.clone();
@@ -195,7 +198,7 @@ fn main() {
             fac *= k;
             if i == itter {
                 println!("Финальный ответ sin(x): {}", sinx);
-            } else if i & info == 0 {
+            } else if i % info == 0 {
                 println!("Расщет sin(x): {}", sinx);
             }
         }
