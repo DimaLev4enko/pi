@@ -2,24 +2,35 @@ use dashu::float::DBig;
 use std::io;
 use std::time::Instant;
 
-fn my_pow(main: DBig, exp: u128, percision: usize) -> DBig {
-    let mut res = DBig::from(1u32).with_precision(percision).value();
+fn my_pow(main: DBig, exp: u128, precision: usize) -> DBig {
+    let mut res = DBig::from(1u32).with_precision(precision).value();
     for _ in 1..=exp {
         res *= &main;
     }
     res
 }
 
+fn my_sqrt(main: DBig, itter: u128, precision: usize, info: u128, info_bool: bool) -> DBig {
+    let mut x = DBig::from(&main / 2).with_precision(precision).value();
+    for i in 0..=itter {
+        x = (&x + (&main / &x)) / 2;
+        if i % info == 0 && info_bool {
+            println!("Ращет корня из {}: {}", &main, &x);
+        }
+    }
+    x
+}
+
 fn main() {
     let mut buffer = String::new();
     println!(
-        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)"
+        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)"
     );
     let choice = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Ошибка");
         if let Ok(num) = buffer.trim().parse::<u8>() {
-            if num > 0 && num <= 7 {
+            if num > 0 && num <= 8 {
                 break num;
             } else {
                 println!("Wrong number");
@@ -57,7 +68,7 @@ fn main() {
         }
     };
     let mut precision = 1;
-    if choice == 3 || choice == 4 || choice == 5 || choice == 6  || choice == 7{
+    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 {
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
             buffer.clear();
@@ -74,7 +85,7 @@ fn main() {
         };
     };
     let mut x = DBig::from(1u32).with_precision(precision).value();
-    if choice == 6 || choice == 7 {
+    if choice == 6 || choice == 7 || choice == 8 {
         println!("Enter x: ");
         x = loop {
             buffer.clear();
@@ -202,26 +213,30 @@ fn main() {
                 println!("Расщет sin({x}): {}", sinx);
             }
         }
-
-    } else if choice == 7{
+    } else if choice == 7 {
         let one = DBig::from(1u32).with_precision(precision).value();
-            let y = (&x-&one)/(&x+&one);
-            let mut k = DBig::from(3u32).with_precision(precision).value();
-            let mut sum = y.clone();
-            let mut ks = 3u128;
-            for i in 1..=itter{
-                sum += (my_pow(y.clone(), ks,precision))/&k;
-                ks += 2;
-                k += 2;
+        let y = (&x - &one) / (&x + &one);
+        let mut k = DBig::from(3u32).with_precision(precision).value();
+        let mut sum = y.clone();
+        let mut ks = 3u128;
+        for i in 1..=itter {
+            sum += (my_pow(y.clone(), ks, precision)) / &k;
+            ks += 2;
+            k += 2;
             if i % info == 0 {
-            
-                println!("Расщет ln({}): {}",x,&sum * 2);
+                println!("Расщет ln({}): {}", x, &sum * 2);
             }
-            }
-            let ln = sum * 2;
-        println!("Финальный ответ ln({x}): {}",ln);
+        }
+        let ln = sum * 2;
+        println!("Финальный ответ ln({x}): {}", ln);
+    } else if choice == 8 {
+        println!(
+            "Финальный ответ корень из {}: {}",
+            &x,
+            my_sqrt(x.clone(), itter, precision, info, true)
+        );
     }
-        
+
     let duration = start.elapsed();
     println!("Время: {:?}", duration);
 }
