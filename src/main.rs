@@ -263,7 +263,7 @@ fn main() {
     } else if choice == 9{
         println!("Финальный ответ факториал из {}: {}",&x, my_fuc(x.clone(),precision, info, true));
     } else if choice == 10{
-        let c = DBig::from((640320*my_sqrt(DBig::from(640320).with_precision(precision).value(),itter,precision,1,false))/12).with_precision(precision).value();
+        let c = DBig::from((640320*my_sqrt(DBig::from(640320).with_precision(precision).value(),itter+20,precision,1,false))/12).with_precision(precision).value();
         let mut s = DBig::from(0).with_precision(precision).value();
         let mut k = DBig::from(0).with_precision(precision).value();
         let mut pi = DBig::from(0).with_precision(precision).value();
@@ -276,9 +276,10 @@ fn main() {
                 k1 = num;
             }
             s += (my_pow(DBig::from(-1).with_precision(precision).value(),i,precision)*my_fuc(6*k.clone(),precision, 1,false)* (545140134 *k.clone() + 13591409))/ (my_fuc(3*&k, precision, 1,false) * my_pow(my_fuc(k.clone(),precision,1,false),3,precision) * my_pow(DBig::from(640320).with_precision(precision).value(),k1,precision));
-            pi = &c/&s;
         k += 1;
             if i % info == 0 {
+
+            pi = &c/&s;
                 println!("Расщет пи: {}",&pi);
             }
         }
