@@ -23,6 +23,9 @@ fn my_sqrt(main: DBig, itter: u128, precision: usize, info: u128, info_bool: boo
 
 fn my_fuc (main: DBig, precision: usize, info: u128, info_bool:bool) ->DBig {
     let mut res = DBig::from(main.clone()).with_precision(precision).value();
+    if res == DBig::from(0).with_precision(precision).value(){
+        return DBig::from(1).with_precision(precision).value()
+    }
     let xb = &main.to_int();
     let x = xb.clone().value();
     let mut xr = 1u128;
@@ -43,13 +46,13 @@ fn my_fuc (main: DBig, precision: usize, info: u128, info_bool:bool) ->DBig {
 fn main() {
     let mut buffer = String::new();
     println!(
-        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)\n9.Factorial (x!)"
+        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)\n9.Factorial (x!)\n10.pi ultra mwga super fast"
     );
     let choice = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Ошибка");
         if let Ok(num) = buffer.trim().parse::<u8>() {
-            if num > 0 && num <= 9 {
+            if num > 0 && num <= 10 {
                 break num;
             } else {
                 println!("Wrong number");
@@ -90,7 +93,7 @@ fn main() {
         }
     };
     let mut precision = 1;
-    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 || choice == 9{
+    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 || choice == 9 || choice == 10{
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
             buffer.clear();
@@ -259,6 +262,27 @@ fn main() {
         );
     } else if choice == 9{
         println!("Финальный ответ факториал из {}: {}",&x, my_fuc(x.clone(),precision, info, true));
+    } else if choice == 10{
+        let c = DBig::from((640320*my_sqrt(DBig::from(640320).with_precision(precision).value(),itter,precision,1,false))/12).with_precision(precision).value();
+        let mut s = DBig::from(0).with_precision(precision).value();
+        let mut k = DBig::from(0).with_precision(precision).value();
+        let mut pi = DBig::from(0).with_precision(precision).value();
+        for i in 0..=itter{
+            let k1b = DBig::from(3 * &k).with_precision(precision).value();
+            let k2b =k1b.to_int();
+            let kr= k2b.clone().value();
+            let mut k1 = 1u128;
+            if let Ok(num) = u128::try_from(kr){
+                k1 = num;
+            }
+            s += (my_pow(DBig::from(-1).with_precision(precision).value(),i,precision)*my_fuc(6*k.clone(),precision, 1,false)* (545140134 *k.clone() + 13591409))/ (my_fuc(3*&k, precision, 1,false) * my_pow(my_fuc(k.clone(),precision,1,false),3,precision) * my_pow(DBig::from(640320).with_precision(precision).value(),k1,precision));
+            pi = &c/&s;
+        k += 1;
+            if i % info == 0 {
+                println!("Расщет пи: {}",&pi);
+            }
+        }
+        println!("Финальный ответ пи: {}",&pi);
     }
 
     let duration = start.elapsed();
