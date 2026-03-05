@@ -1,4 +1,5 @@
 use dashu::float::DBig;
+use rayon::join;
 use rayon::prelude::*;
 use std::io;
 use std::time::Instant;
@@ -314,46 +315,51 @@ fn main() {
         }
         println!("Финальный ответ пи: {}", &pi);
     } else if choice == 11 {
-        let c = DBig::from(
-            (640320
-                * my_sqrt(
-                    DBig::from(640320).with_precision(precision).value(),
-                    itter + 20,
-                    precision,
-                    1,
-                    false,
-                ))
-                / 12,
-        )
-        .with_precision(precision)
-        .value();
-
-        let s = (0..itter)
-            .into_par_iter()
-            .map(|k| {
-                let kb = DBig::from(k).with_precision(precision).value();
-                let s = (my_pow(
-                    DBig::from(-1).with_precision(precision).value(),
-                    k,
-                    precision,
-                ) * my_fuc(6 * kb.clone(), precision, 1, false)
-                    * (545140134 * k + 13591409))
-                    / (my_fuc(3 * kb.clone(), precision, 1, false)
-                        * my_pow(my_fuc(kb.clone(), precision, 1, false), 3, precision)
-                        * my_pow(
+        let (c, s) = join(
+            || {
+                DBig::from(
+                    (640320
+                        * my_sqrt(
                             DBig::from(640320).with_precision(precision).value(),
-                            k * 3,
+                            itter + 20,
                             precision,
-                        ));
-                if k % info == 0 {
-                    println!("Расщет, k(шаг) сейчас {k}");
-                }
-                s
-            })
-            .reduce(
-                || DBig::from(0).with_precision(precision).value(),
-                |acc, x| acc + x,
-            );
+                            1,
+                            false,
+                        ))
+                        / 12,
+                )
+                .with_precision(precision)
+                .value()
+            },
+            || {
+                (0..itter)
+                    .into_par_iter()
+                    .map(|k| {
+                        let kb = DBig::from(k).with_precision(precision).value();
+                        let s = (my_pow(
+                            DBig::from(-1).with_precision(precision).value(),
+                            k,
+                            precision,
+                        ) * my_fuc(6 * kb.clone(), precision, 1, false)
+                            * (545140134 * k + 13591409))
+                            / (my_fuc(3 * kb.clone(), precision, 1, false)
+                                * my_pow(my_fuc(kb.clone(), precision, 1, false), 3, precision)
+                                * my_pow(
+                                    DBig::from(640320).with_precision(precision).value(),
+                                    k * 3,
+                                    precision,
+                                ));
+                        if k % info == 0 {
+                            println!("Расщет, k(шаг) сейчас {k}");
+                        }
+                        s
+                    })
+                    .reduce(
+                        || DBig::from(0).with_precision(precision).value(),
+                        |acc, x| acc + x,
+                    )
+            },
+        );
 
         let pi = DBig::from(c / s).with_precision(precision).value();
         println!("Финальный ответ пи: {}", &pi);
