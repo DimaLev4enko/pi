@@ -1,4 +1,5 @@
 use dashu::float::DBig;
+use rayon::prelude::*;
 use std::io;
 use std::time::Instant;
 
@@ -21,23 +22,23 @@ fn my_sqrt(main: DBig, itter: u128, precision: usize, info: u128, info_bool: boo
     x
 }
 
-fn my_fuc (main: DBig, precision: usize, info: u128, info_bool:bool) ->DBig {
+fn my_fuc(main: DBig, precision: usize, info: u128, info_bool: bool) -> DBig {
     let mut res = DBig::from(main.clone()).with_precision(precision).value();
-    if res == DBig::from(0).with_precision(precision).value(){
-        return DBig::from(1).with_precision(precision).value()
+    if res == DBig::from(0).with_precision(precision).value() {
+        return DBig::from(1).with_precision(precision).value();
     }
     let xb = &main.to_int();
     let x = xb.clone().value();
     let mut xr = 1u128;
-    if let Ok(num) = u128::try_from(x){
+    if let Ok(num) = u128::try_from(x) {
         xr = num;
     } else {
         println!("Error");
     }
-    for i in 1..xr{
+    for i in 1..xr {
         res *= i;
-        if i % info == 0 && info_bool{
-            println!("Расщет {}!: {}", &main,&res);
+        if i % info == 0 && info_bool {
+            println!("Расщет {}!: {}", &main, &res);
         }
     }
     res
@@ -62,21 +63,21 @@ fn main() {
         }
     };
     let mut itter = 1;
-    if choice != 9{
-    println!("Enter itteraion");
-    let _ = loop {
-        buffer.clear();
-        io::stdin().read_line(&mut buffer).expect("Error");
-        if let Ok(num) = buffer.trim().parse::<u128>() {
-            if num > 0 {
-                break itter = num;
+    if choice != 9 {
+        println!("Enter itteraion");
+        let _ = loop {
+            buffer.clear();
+            io::stdin().read_line(&mut buffer).expect("Error");
+            if let Ok(num) = buffer.trim().parse::<u128>() {
+                if num > 0 {
+                    break itter = num;
+                } else {
+                    println!("Wrong number");
+                }
             } else {
-                println!("Wrong number");
+                println!("Not number");
             }
-        } else {
-            println!("Not number");
-        }
-    };
+        };
     }
     println!("Через соклько итераций виводить информацию?");
     let info = loop {
@@ -93,7 +94,15 @@ fn main() {
         }
     };
     let mut precision = 1;
-    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 || choice == 9 || choice == 10{
+    if choice == 3
+        || choice == 4
+        || choice == 5
+        || choice == 6
+        || choice == 7
+        || choice == 8
+        || choice == 9
+        || choice == 10
+    {
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
             buffer.clear();
@@ -110,7 +119,7 @@ fn main() {
         };
     };
     let mut x = DBig::from(1u32).with_precision(precision).value();
-    if choice == 6 || choice == 7 || choice == 8 || choice == 9{
+    if choice == 6 || choice == 7 || choice == 8 || choice == 9 {
         println!("Enter x: ");
         x = loop {
             buffer.clear();
@@ -260,30 +269,49 @@ fn main() {
             &x,
             my_sqrt(x.clone(), itter, precision, info, true)
         );
-    } else if choice == 9{
-        println!("Финальный ответ факториал из {}: {}",&x, my_fuc(x.clone(),precision, info, true));
-    } else if choice == 10{
-        let c = DBig::from((640320*my_sqrt(DBig::from(640320).with_precision(precision).value(),itter+20,precision,1,false))/12).with_precision(precision).value();
+    } else if choice == 9 {
+        println!(
+            "Финальный ответ факториал из {}: {}",
+            &x,
+            my_fuc(x.clone(), precision, info, true)
+        );
+    } else if choice == 10 {
+        let c = DBig::from(
+            (640320
+                * my_sqrt(
+                    DBig::from(640320).with_precision(precision).value(),
+                    itter + 20,
+                    precision,
+                    1,
+                    false,
+                ))
+                / 12,
+        )
+        .with_precision(precision)
+        .value();
         let mut s = DBig::from(0).with_precision(precision).value();
-        let mut k = DBig::from(0).with_precision(precision).value();
         let mut pi = DBig::from(0).with_precision(precision).value();
-        for i in 0..=itter{
-            let k1b = DBig::from(3 * &k).with_precision(precision).value();
-            let k2b =k1b.to_int();
-            let kr= k2b.clone().value();
-            let mut k1 = 1u128;
-            if let Ok(num) = u128::try_from(kr){
-                k1 = num;
-            }
-            s += (my_pow(DBig::from(-1).with_precision(precision).value(),i,precision)*my_fuc(6*k.clone(),precision, 1,false)* (545140134 *k.clone() + 13591409))/ (my_fuc(3*&k, precision, 1,false) * my_pow(my_fuc(k.clone(),precision,1,false),3,precision) * my_pow(DBig::from(640320).with_precision(precision).value(),k1,precision));
-        k += 1;
-            if i % info == 0 {
-
-            pi = &c/&s;
-                println!("Расщет пи: {}",&pi);
+        for k in 0..=itter {
+            let kb = DBig::from(k).with_precision(precision).value();
+            s += (my_pow(
+                DBig::from(-1).with_precision(precision).value(),
+                k,
+                precision,
+            ) * my_fuc(6 * kb.clone(), precision, 1, false)
+                * (545140134 * k + 13591409))
+                / (my_fuc(3 * kb.clone(), precision, 1, false)
+                    * my_pow(my_fuc(kb.clone(), precision, 1, false), 3, precision)
+                    * my_pow(
+                        DBig::from(640320).with_precision(precision).value(),
+                        k * 3,
+                        precision,
+                    ));
+            if k % info == 0 {
+                pi = &c / &s;
+                println!("Расщет пи: {}", &pi);
             }
         }
-        println!("Финальный ответ пи: {}",&pi);
+        println!("Финальный ответ пи: {}", &pi);
     }
 
     let duration = start.elapsed();

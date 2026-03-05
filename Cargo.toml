@@ -6,3 +6,4 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 dashu = "0.4.2"
+rayon = "1.11.0"
