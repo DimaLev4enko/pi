@@ -21,16 +21,35 @@ fn my_sqrt(main: DBig, itter: u128, precision: usize, info: u128, info_bool: boo
     x
 }
 
+fn my_fuc (main: DBig, precision: usize, info: u128, info_bool:bool) ->DBig {
+    let mut res = DBig::from(main.clone()).with_precision(precision).value();
+    let xb = &main.to_int();
+    let x = xb.clone().value();
+    let mut xr = 1u128;
+    if let Ok(num) = u128::try_from(x){
+        xr = num;
+    } else {
+        println!("Error");
+    }
+    for i in 1..xr{
+        res *= i;
+        if i % info == 0 && info_bool{
+            println!("Расщет {}!: {}", &main,&res);
+        }
+    }
+    res
+}
+
 fn main() {
     let mut buffer = String::new();
     println!(
-        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)"
+        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)\n9.Factorial (x!)"
     );
     let choice = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Ошибка");
         if let Ok(num) = buffer.trim().parse::<u8>() {
-            if num > 0 && num <= 8 {
+            if num > 0 && num <= 9 {
                 break num;
             } else {
                 println!("Wrong number");
@@ -39,13 +58,15 @@ fn main() {
             println!("Not number");
         }
     };
+    let mut itter = 1;
+    if choice != 9{
     println!("Enter itteraion");
-    let itter = loop {
+    let _ = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Error");
         if let Ok(num) = buffer.trim().parse::<u128>() {
             if num > 0 {
-                break num;
+                break itter = num;
             } else {
                 println!("Wrong number");
             }
@@ -53,6 +74,7 @@ fn main() {
             println!("Not number");
         }
     };
+    }
     println!("Через соклько итераций виводить информацию?");
     let info = loop {
         buffer.clear();
@@ -68,7 +90,7 @@ fn main() {
         }
     };
     let mut precision = 1;
-    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 {
+    if choice == 3 || choice == 4 || choice == 5 || choice == 6 || choice == 7 || choice == 8 || choice == 9{
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
             buffer.clear();
@@ -85,7 +107,7 @@ fn main() {
         };
     };
     let mut x = DBig::from(1u32).with_precision(precision).value();
-    if choice == 6 || choice == 7 || choice == 8 {
+    if choice == 6 || choice == 7 || choice == 8 || choice == 9{
         println!("Enter x: ");
         x = loop {
             buffer.clear();
@@ -235,6 +257,8 @@ fn main() {
             &x,
             my_sqrt(x.clone(), itter, precision, info, true)
         );
+    } else if choice == 9{
+        println!("Финальный ответ факториал из {}: {}",&x, my_fuc(x.clone(),precision, info, true));
     }
 
     let duration = start.elapsed();
