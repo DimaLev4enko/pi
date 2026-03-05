@@ -47,13 +47,13 @@ fn my_fuc(main: DBig, precision: usize, info: u128, info_bool: bool) -> DBig {
 fn main() {
     let mut buffer = String::new();
     println!(
-        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)\n9.Factorial (x!)\n10.pi ultra mwga super fast"
+        "Enter method:\n1.Slow\n2.Fast f64\n3.Fast Big\n4.Euler big\n5.Golden ratio big super fast sqrt(5)\n6.cos(x)\n7.ln(x)\n8.sqrt(x)\n9.Factorial (x!)\n10.pi ultra mega super fast\n11.pi ultra mega super fast(МНОГОПОТОЧНОСТЬ!!!)"
     );
     let choice = loop {
         buffer.clear();
         io::stdin().read_line(&mut buffer).expect("Ошибка");
         if let Ok(num) = buffer.trim().parse::<u8>() {
-            if num > 0 && num <= 10 {
+            if num > 0 && num <= 11 {
                 break num;
             } else {
                 println!("Wrong number");
@@ -102,6 +102,7 @@ fn main() {
         || choice == 8
         || choice == 9
         || choice == 10
+        || choice == 11
     {
         println!("Введите точность: (желательно не больше 1000");
         precision = loop {
@@ -311,6 +312,50 @@ fn main() {
                 println!("Расщет пи: {}", &pi);
             }
         }
+        println!("Финальный ответ пи: {}", &pi);
+    } else if choice == 11 {
+        let c = DBig::from(
+            (640320
+                * my_sqrt(
+                    DBig::from(640320).with_precision(precision).value(),
+                    itter + 20,
+                    precision,
+                    1,
+                    false,
+                ))
+                / 12,
+        )
+        .with_precision(precision)
+        .value();
+
+        let s = (0..itter)
+            .into_par_iter()
+            .map(|k| {
+                let kb = DBig::from(k).with_precision(precision).value();
+                let s = (my_pow(
+                    DBig::from(-1).with_precision(precision).value(),
+                    k,
+                    precision,
+                ) * my_fuc(6 * kb.clone(), precision, 1, false)
+                    * (545140134 * k + 13591409))
+                    / (my_fuc(3 * kb.clone(), precision, 1, false)
+                        * my_pow(my_fuc(kb.clone(), precision, 1, false), 3, precision)
+                        * my_pow(
+                            DBig::from(640320).with_precision(precision).value(),
+                            k * 3,
+                            precision,
+                        ));
+                if k % info == 0 {
+                    println!("Расщет, k(шаг) сейчас {k}");
+                }
+                s
+            })
+            .reduce(
+                || DBig::from(0).with_precision(precision).value(),
+                |acc, x| acc + x,
+            );
+
+        let pi = DBig::from(c / s).with_precision(precision).value();
         println!("Финальный ответ пи: {}", &pi);
     }
 
