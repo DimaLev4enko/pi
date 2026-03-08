@@ -1,7 +1,9 @@
 use dashu::float::DBig;
 use rayon::join;
 use rayon::prelude::*;
+use std::fs::File;
 use std::io;
+use std::io::{BufWriter, Write};
 use std::time::Instant;
 
 fn my_pow(main: DBig, exp: u128, precision: usize) -> DBig {
@@ -45,6 +47,44 @@ fn my_fuc(main: DBig, precision: usize, info: u128, info_bool: bool) -> DBig {
     res
 }
 
+fn parser(min: u8, max: u8) -> u8 {
+    let mut buffer = String::new();
+    loop {
+        buffer.clear();
+        io::stdin().read_line(&mut buffer).expect("error");
+        if let Ok(num) = buffer.trim().parse::<u8>() {
+            if num >= min && num <= max {
+                break num;
+            } else {
+                println!("Не в диапазоне")
+            }
+        } else {
+            println!("Не число")
+        }
+    }
+}
+
+fn strparser() -> String {
+    let mut buffer = String::new();
+    loop {
+        buffer.clear();
+        io::stdin().read_line(&mut buffer).expect("error");
+        let str = buffer.trim().to_string();
+        if str.is_empty() {
+            println!("Empty string, try again");
+            continue;
+        }
+        break str;
+    }
+}
+
+fn save(name: &str, con: &DBig) {
+    let file = File::create(name).expect("error");
+    let mut writer = BufWriter::new(file);
+    writeln!(writer, "{}", con).expect("error");
+    writer.flush().expect("error");
+}
+
 fn main() {
     let mut buffer = String::new();
     println!(
@@ -66,7 +106,7 @@ fn main() {
     let mut itter = 1;
     if choice != 9 {
         println!("Enter itteraion");
-        let _ = loop {
+        loop {
             buffer.clear();
             io::stdin().read_line(&mut buffer).expect("Error");
             if let Ok(num) = buffer.trim().parse::<u128>() {
@@ -78,7 +118,7 @@ fn main() {
             } else {
                 println!("Not number");
             }
-        };
+        }
     }
     println!("Через соклько итераций виводить информацию?");
     let info = loop {
@@ -133,6 +173,13 @@ fn main() {
             }
         };
     }
+    println!("Сохранять в файл? 0-нет, 1-да, 2-с своим названием");
+    let schoice = parser(0, 2);
+    let mut name = String::new();
+    if schoice == 2 {
+        println!("Enter name: ");
+        name = strparser();
+    };
     let start = Instant::now();
     if choice == 1 {
         let c = 4.0;
@@ -149,7 +196,16 @@ fn main() {
             } * (c / b);
             b += 2.0;
             if i == itter {
-                println!("Финальный ответ, число пи {}", pi);
+                let powerpi = 10f64.powi(17);
+                let intpi = (pi * powerpi).round() as u128;
+                let bpi = DBig::from(intpi).with_precision(17).value()
+                    / DBig::from(10u128.pow(17)).with_precision(17).value();
+                println!("Финальний ответ, число пи: {bpi}");
+                match schoice {
+                    1 => save("pi.txt", &bpi),
+                    2 => save(&name, &bpi),
+                    _ => (),
+                }
             } else if i % info == 0 {
                 println!("Число пи {}", pi);
             }
@@ -169,7 +225,16 @@ fn main() {
             } * (con / (b1 * b2 * b3));
             (b1, b2, b3) = (b1 + 2.0, b2 + 2.0, b3 + 2.0);
             if i == itter {
-                println!("Финальный ответ, число пи {}", pi);
+                let powerpi = 10f64.powi(17);
+                let intpi = (pi * powerpi).round() as u128;
+                let bpi = DBig::from(intpi).with_precision(17).value()
+                    / DBig::from(10u128.pow(17)).with_precision(17).value();
+                println!("Финальный ответ, число пи {}", bpi);
+                match schoice {
+                    1 => save("pi.txt", &bpi),
+                    2 => save(&name, &bpi),
+                    _ => (),
+                }
             } else if i % info == 0 {
                 println!("Число пи {}", pi);
             }
@@ -195,6 +260,11 @@ fn main() {
             b3 += 2;
             if i == itter {
                 println!("Финальный ответ, число пи {}", pi);
+                match schoice {
+                    1 => save("pi.txt", &pi),
+                    2 => save(&name, &pi),
+                    _ => (),
+                }
             } else if i % info == 0 {
                 println!("Число пи {}", pi);
             }
@@ -208,6 +278,11 @@ fn main() {
             e += &one / &fact;
             if i == itter {
                 println!("Финальный ответ, число e {}", e);
+                match schoice {
+                    1 => save("e.txt", &e),
+                    2 => save(&name, &e),
+                    _ => (),
+                }
             } else if i % info == 0 {
                 println!("Число e {}", e);
             }
@@ -225,6 +300,11 @@ fn main() {
         }
         let phi = (&one + &x) / &two;
         println!("Golden ratio: {}", phi);
+        match schoice {
+            1 => save("golden ratio.txt", &phi),
+            2 => save(&name, &phi),
+            _ => (),
+        }
     } else if choice == 6 {
         let mut fac = DBig::from(6u32).with_precision(precision).value();
         let mut plus = false;
@@ -245,6 +325,11 @@ fn main() {
             fac *= k;
             if i == itter {
                 println!("Финальный ответ sin({x}): {}", sinx);
+                match schoice {
+                    1 => save("sin(x).txt", &sinx),
+                    2 => save(&name, &sinx),
+                    _ => (),
+                }
             } else if i % info == 0 {
                 println!("Расщет sin({x}): {}", sinx);
             }
@@ -265,18 +350,36 @@ fn main() {
         }
         let ln = sum * 2;
         println!("Финальный ответ ln({x}): {}", ln);
+        match schoice {
+            1 => save("ln(x).txt", &ln),
+            2 => save(&name, &ln),
+            _ => (),
+        }
     } else if choice == 8 {
         println!(
             "Финальный ответ корень из {}: {}",
             &x,
             my_sqrt(x.clone(), itter, precision, info, true)
         );
+        match schoice {
+            1 => save(
+                "sqrt.txt",
+                &my_sqrt(x.clone(), itter, precision, info, true),
+            ),
+            2 => save(&name, &my_sqrt(x.clone(), itter, precision, info, true)),
+            _ => (),
+        }
     } else if choice == 9 {
         println!(
             "Финальный ответ факториал из {}: {}",
             &x,
             my_fuc(x.clone(), precision, info, true)
         );
+        match schoice {
+            1 => save("factorial.txt", &my_fuc(x.clone(), precision, info, true)),
+            2 => save(&name, &my_fuc(x.clone(), precision, info, true)),
+            _ => (),
+        }
     } else if choice == 10 {
         let c = DBig::from(
             (640320
@@ -314,6 +417,11 @@ fn main() {
             }
         }
         println!("Финальный ответ пи: {}", &pi);
+        match schoice {
+            1 => save("pi.txt", &pi),
+            2 => save(&name, &pi),
+            _ => (),
+        }
     } else if choice == 11 {
         let (c, s) = join(
             || {
@@ -363,6 +471,11 @@ fn main() {
 
         let pi = DBig::from(c / s).with_precision(precision).value();
         println!("Финальный ответ пи: {}", &pi);
+        match schoice {
+            1 => save("pi.txt", &pi),
+            2 => save(&name, &pi),
+            _ => (),
+        }
     }
 
     let duration = start.elapsed();
